@@ -19,14 +19,18 @@ export async function globalGuard(
   const authState = getAuthState?.() ?? { isAuthenticated: false };
   const { isAuthenticated } = authState;
 
+  // استخرج صلاحيات اليوزر من الـ authState
+  const userPermissions =
+    authState?.permissions || authState?.user?.permissions || [];
+
   const isAuthRoute = authRoutes.some((route) => route.path === to.path);
   const requiresAuth = to.meta?.requiresAuth;
 
   const hasAccess = async (): Promise<boolean> => {
     if (!to.meta?.checkPermission) return true;
-    const permissions = to.meta?.permissions;
-    if (!permissions || permissions === "*") return true;
-    return await hasPermission(permissions);
+    const requiredPermissions = to.meta?.permissions;
+    if (!requiredPermissions || requiredPermissions === "*") return true;
+    return await hasPermission(requiredPermissions, userPermissions);
   };
 
   const findAccessibleRoute = async (
@@ -35,12 +39,12 @@ export async function globalGuard(
   ): Promise<string | null> => {
     for (const route of routes) {
       const fullPath = basePath + route.path;
-      const permissions = route.meta?.permissions;
+      const requiredPermissions = route.meta?.permissions;
 
       if (
-        !permissions ||
-        permissions === "*" ||
-        (await hasPermission(permissions))
+        !requiredPermissions ||
+        requiredPermissions === "*" ||
+        (await hasPermission(requiredPermissions, userPermissions))
       ) {
         return fullPath;
       }

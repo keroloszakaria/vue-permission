@@ -1,61 +1,63 @@
-import { isRef as M } from "vue";
-const y = /* @__PURE__ */ new Map(), N = (e) => y.has(e) ? y.get(e) : null, W = (e, s) => y.set(e, s), E = () => y.clear(), D = "__v_permission__", F = (e) => btoa(JSON.stringify(e)), J = (e) => JSON.parse(atob(e)), q = (e) => {
+import { isRef as S } from "vue";
+const g = /* @__PURE__ */ new Map(), W = (e) => g.has(e) ? g.get(e) : null, E = (e, s) => g.set(e, s), F = () => g.clear(), M = "__v_permission__", J = (e) => btoa(JSON.stringify(e)), G = (e) => JSON.parse(atob(e)), K = (e) => {
   try {
-    localStorage.setItem(D, F(e));
+    localStorage.setItem(M, J(e));
   } catch (s) {
     console.warn("[v-permission] Failed to save permissions to storage:", s);
   }
-}, G = () => {
+}, T = () => {
   try {
-    const e = localStorage.getItem(D);
-    return e ? J(e) : null;
+    const e = localStorage.getItem(M);
+    return e ? G(e) : null;
   } catch (e) {
     return console.warn("[v-permission] Failed to read permissions from storage:", e), null;
   }
 };
-let b = { permissions: null }, w = !1;
-const I = (e, s) => {
-  b.permissions = e, w = (s == null ? void 0 : s.developmentMode) ?? !1, E(), q(e);
-}, K = () => {
-  const e = G();
-  e && I(e);
-}, T = () => {
-  const { permissions: e } = b;
-  return M(e) ? e.value : e ?? [];
-}, d = async (e) => {
-  const s = T(), i = JSON.stringify(e), c = N(i);
-  if (c !== null) return c;
-  const f = await (async (n) => {
-    var l;
-    if (typeof n == "string") return s.includes(n);
-    if (Array.isArray(n))
-      return (await Promise.all(n.map(d))).some(Boolean);
-    if (typeof n == "object" && n.permissions && n.mode) {
-      const { permissions: a, mode: g } = n, m = {
-        and: () => a.every((t) => s.includes(t)),
-        or: () => a.some((t) => s.includes(t)),
-        startWith: () => a.some(
-          (t) => s.some((r) => r.startsWith(t))
+let q = { permissions: null }, _ = !1;
+const N = (e, s) => {
+  q.permissions = e, _ = (s == null ? void 0 : s.developmentMode) ?? !1, F(), K(e);
+}, j = () => {
+  const e = T();
+  e && N(e);
+}, x = () => {
+  const { permissions: e } = q;
+  return S(e) ? e.value : e ?? [];
+}, d = async (e, s) => {
+  const i = s ?? x(), m = JSON.stringify({ permissionValue: e, currentPermissions: i }), f = W(m);
+  if (f !== null) return f;
+  const c = await (async (t) => {
+    var p;
+    if (typeof t == "string") return i.includes(t);
+    if (Array.isArray(t))
+      return (await Promise.all(
+        t.map((n) => d(n, i))
+      )).some(Boolean);
+    if (typeof t == "object" && t.permissions && t.mode) {
+      const { permissions: n, mode: P } = t, l = {
+        and: () => n.every((r) => i.includes(r)),
+        or: () => n.some((r) => i.includes(r)),
+        startWith: () => n.some(
+          (r) => i.some((o) => o.startsWith(r))
         ),
-        endWith: () => a.some(
-          (t) => s.some((r) => r.endsWith(t))
+        endWith: () => n.some(
+          (r) => i.some((o) => o.endsWith(r))
         ),
-        exact: () => a.some((t) => s.includes(t)),
-        regex: () => a.some((t) => {
+        exact: () => n.some((r) => i.includes(r)),
+        regex: () => n.some((r) => {
           try {
-            const r = new RegExp(t);
-            return s.some((v) => r.test(v));
-          } catch (r) {
-            return w && console.warn("[v-permission] Invalid regex:", t, r), !1;
+            const o = new RegExp(r);
+            return i.some((v) => o.test(v));
+          } catch (o) {
+            return _ && console.warn("[v-permission] Invalid regex:", r, o), !1;
           }
         })
       };
-      return ((l = m[g]) == null ? void 0 : l.call(m)) ?? !1;
+      return ((p = l[P]) == null ? void 0 : p.call(l)) ?? !1;
     }
-    return w && console.warn("[v-permission] Invalid permission value:", n), !1;
+    return _ && console.warn("[v-permission] Invalid permission value:", t), !1;
   })(e);
-  return W(i, f), f;
-}, j = {
+  return E(m, c), c;
+}, B = {
   async mounted(e, s) {
     const i = s.value;
     await d(i) || (e._vPermissionOriginalDisplay = e.style.display, e.style.display = "none");
@@ -69,54 +71,54 @@ const I = (e, s) => {
   unmounted(e) {
     e._vPermissionOriginalDisplay = void 0;
   }
-}, B = {
+}, k = {
   install(e, s) {
-    s != null && s.permissions ? I(s.permissions, {
+    s != null && s.permissions ? N(s.permissions, {
       developmentMode: s.developmentMode
-    }) : K(), e.directive("permission", j);
+    }) : j(), e.directive("permission", B);
   }
 };
-async function Y(e, s, i, c = {}) {
-  var S;
+async function z(e, s, i, m = {}) {
+  var R, C;
   const {
-    authRoutes: _ = [],
-    protectedRoutes: f = [],
-    getAuthState: n,
-    loginPath: l = "/login",
-    homePath: a = "/"
-  } = c, g = (n == null ? void 0 : n()) ?? { isAuthenticated: !1 }, { isAuthenticated: m } = g, t = _.some((o) => o.path === e.path), r = (S = e.meta) == null ? void 0 : S.requiresAuth, v = async () => {
-    var p, u;
-    if (!((p = e.meta) != null && p.checkPermission)) return !0;
-    const o = (u = e.meta) == null ? void 0 : u.permissions;
-    return !o || o === "*" ? !0 : await d(o);
-  }, A = async (o, p = "") => {
-    var u, O;
-    for (const h of o) {
-      const R = p + h.path, P = (u = h.meta) == null ? void 0 : u.permissions;
-      if (!P || P === "*" || await d(P))
-        return R;
-      if ((O = h.children) != null && O.length) {
-        const C = await A(h.children, R);
-        if (C) return C;
+    authRoutes: f = [],
+    protectedRoutes: A = [],
+    getAuthState: c,
+    loginPath: t = "/login",
+    homePath: p = "/"
+  } = m, n = (c == null ? void 0 : c()) ?? { isAuthenticated: !1 }, { isAuthenticated: P } = n, l = (n == null ? void 0 : n.permissions) || ((R = n == null ? void 0 : n.user) == null ? void 0 : R.permissions) || [], r = f.some((a) => a.path === e.path), o = (C = e.meta) == null ? void 0 : C.requiresAuth, v = async () => {
+    var h, u;
+    if (!((h = e.meta) != null && h.checkPermission)) return !0;
+    const a = (u = e.meta) == null ? void 0 : u.permissions;
+    return !a || a === "*" ? !0 : await d(a, l);
+  }, O = async (a, h = "") => {
+    var u, D;
+    for (const y of a) {
+      const b = h + y.path, w = (u = y.meta) == null ? void 0 : u.permissions;
+      if (!w || w === "*" || await d(w, l))
+        return b;
+      if ((D = y.children) != null && D.length) {
+        const I = await O(y.children, b);
+        if (I) return I;
       }
     }
     return null;
   };
-  if (!m)
-    return r ? i(l) : i();
-  if (t) return i(a);
+  if (!P)
+    return o ? i(t) : i();
+  if (r) return i(p);
   if (!await v()) {
-    const o = await A(f);
-    return i(o || l);
+    const a = await O(A);
+    return i(a || t);
   }
   i();
 }
 export {
-  B as PermissionPlugin,
-  E as clearPermissionCache,
-  I as configurePermissionDirective,
-  Y as globalGuard,
+  k as PermissionPlugin,
+  F as clearPermissionCache,
+  N as configurePermissionDirective,
+  z as globalGuard,
   d as hasPermission,
-  K as initPermissionDirectiveIfNeeded,
-  j as vPermission
+  j as initPermissionDirectiveIfNeeded,
+  B as vPermission
 };

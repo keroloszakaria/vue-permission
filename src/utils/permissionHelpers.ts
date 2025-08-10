@@ -34,17 +34,22 @@ export const getCurrentPermissions = (): string[] => {
 };
 
 export const hasPermission = async (
-  permissionValue: PermissionValue
+  permissionValue: PermissionValue,
+  userPermissions?: string[] // جديد
 ): Promise<boolean> => {
-  const currentPermissions = getCurrentPermissions();
-  const cacheKey = JSON.stringify(permissionValue);
+  const currentPermissions = userPermissions ?? getCurrentPermissions();
+  const cacheKey = JSON.stringify({ permissionValue, currentPermissions });
   const cached = getCachedPermission(cacheKey);
   if (cached !== null) return cached;
 
   const evaluate = async (value: PermissionValue): Promise<boolean> => {
     if (typeof value === "string") return currentPermissions.includes(value);
     if (Array.isArray(value))
-      return (await Promise.all(value.map(hasPermission))).some(Boolean);
+      return (
+        await Promise.all(
+          value.map((p) => hasPermission(p, currentPermissions))
+        )
+      ).some(Boolean);
     if (typeof value === "object" && value.permissions && value.mode) {
       const { permissions, mode } = value;
       const checks = {
