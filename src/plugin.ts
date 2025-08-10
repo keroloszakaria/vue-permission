@@ -1,7 +1,7 @@
 import type { App } from "vue";
 import { vPermission } from "./directives/v-permission";
 import {
-  configurePermissionDirective,
+  configurePermission,
   initPermissionDirectiveIfNeeded,
 } from "./utils/permissionHelpers";
 
@@ -11,7 +11,7 @@ export default {
     options?: { permissions?: string[]; developmentMode?: boolean }
   ) {
     if (options?.permissions) {
-      configurePermissionDirective(options.permissions, {
+      configurePermission(options.permissions, {
         developmentMode: options.developmentMode,
       });
     } else {
