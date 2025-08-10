@@ -1,0 +1,46 @@
+{
+  "name": "vue-permission",
+  "version": "2.0.0",
+  "description": "A lightweight, flexible permission directive and router guard for Vue 3",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "lint": "eslint . --ext .ts,.vue --fix",
+    "prepublishOnly": "npm run lint && npm run build"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "permissions",
+    "directive",
+    "router-guard",
+    "authorization"
+  ],
+  "author": "kerolos",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0",
+    "vue": "^3.4.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "eslint": "8.57.0",
+    "@typescript-eslint/eslint-plugin": "6.21.0",
+    "@typescript-eslint/parser": "6.21.0"
+  }
+}
