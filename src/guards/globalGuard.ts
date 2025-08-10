@@ -1,7 +1,4 @@
-import {
-  hasPermission,
-  getCurrentPermissions,
-} from "../utils/permissionHelpers";
+import { hasPermission } from "../utils/permissionHelpers";
 import type { RouteLocationNormalized, NavigationGuardNext } from "vue-router";
 import type { GuardOptions } from "../types";
 
@@ -19,13 +16,12 @@ export async function globalGuard(
     homePath = "/",
   } = options;
 
-  // نستخدم getAuthState لو متوفر عشان نعرف حالة المصادقة، لو مش متوفر نفترض false
   const authState = getAuthState?.() ?? { isAuthenticated: false };
-
   const { isAuthenticated } = authState;
 
-  // بدل قراءة صلاحيات من getAuthState، ناخدها من vue-permission مباشرة
-  const currentPermissions = getCurrentPermissions();
+  // استخرج صلاحيات اليوزر من الـ authState
+  const userPermissions =
+    authState?.permissions || authState?.user?.permissions || [];
 
   const isAuthRoute = authRoutes.some((route) => route.path === to.path);
   const requiresAuth = to.meta?.requiresAuth;
@@ -34,7 +30,7 @@ export async function globalGuard(
     if (!to.meta?.checkPermission) return true;
     const requiredPermissions = to.meta?.permissions;
     if (!requiredPermissions || requiredPermissions === "*") return true;
-    return await hasPermission(requiredPermissions, currentPermissions);
+    return await hasPermission(requiredPermissions, userPermissions);
   };
 
   const findAccessibleRoute = async (
@@ -48,7 +44,7 @@ export async function globalGuard(
       if (
         !requiredPermissions ||
         requiredPermissions === "*" ||
-        (await hasPermission(requiredPermissions, currentPermissions))
+        (await hasPermission(requiredPermissions, userPermissions))
       ) {
         return fullPath;
       }

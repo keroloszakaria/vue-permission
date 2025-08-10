@@ -3,7 +3,7 @@ export { vPermission } from "./directives/v-permission";
 export { globalGuard } from "./guards/globalGuard";
 export {
   hasPermission,
-  configurePermission,
+  configurePermissionDirective,
   initPermissionDirectiveIfNeeded,
 } from "./utils/permissionHelpers";
 export { clearPermissionCache } from "./utils/permissionCache";
