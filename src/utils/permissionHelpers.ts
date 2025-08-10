@@ -13,7 +13,7 @@ import {
 let globalConfig: GlobalConfig = { permissions: null };
 let isDevelopmentMode = false;
 
-export const configurePermissionDirective = (
+export const configurePermission = (
   permissions: PermissionsArray,
   options?: { developmentMode?: boolean }
 ) => {
@@ -25,7 +25,7 @@ export const configurePermissionDirective = (
 
 export const initPermissionDirectiveIfNeeded = () => {
   const stored = getPermissionsFromStorage();
-  if (stored) configurePermissionDirective(stored);
+  if (stored) configurePermission(stored);
 };
 
 export const getCurrentPermissions = (): string[] => {
