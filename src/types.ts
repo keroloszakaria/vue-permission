@@ -25,7 +25,6 @@ export interface PluginOptions {
   developmentMode?: boolean;
 }
 
-// تحديث getAuthState ليستخدم AuthState مباشرة
 export interface GuardOptions {
   authRoutes?: Array<{ path: string }>;
   protectedRoutes?: any[];
@@ -39,18 +38,15 @@ declare global {
     _vPermissionOriginalDisplay?: string;
   }
 }
-
-// هنا عرفنا الـ AuthState بشكل أوضح
 export interface AuthState {
   isAuthenticated: boolean;
-  permissions?: string[]; // صلاحيات مباشرة
+  permissions?: string[];
   user?: {
-    permissions?: string[]; // صلاحيات جوه اليوزر
+    permissions?: string[];
     [key: string]: any;
   };
 }
 
-// هنا لو بتستخدم vue-router لازم يكون متسطب vue-router@4
 declare module "vue-router" {
   interface RouteMeta {
     requiresAuth?: boolean;

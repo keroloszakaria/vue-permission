@@ -35,23 +35,33 @@ export const getCurrentPermissions = (): string[] => {
 
 export const hasPermission = async (
   permissionValue: PermissionValue,
-  userPermissions?: string[] // جديد
+  userPermissions?: string[]
 ): Promise<boolean> => {
   const currentPermissions = userPermissions ?? getCurrentPermissions();
+
+  // استخدم كاش يعتمد على permissionValue مع الصلاحيات الحالية
   const cacheKey = JSON.stringify({ permissionValue, currentPermissions });
   const cached = getCachedPermission(cacheKey);
   if (cached !== null) return cached;
 
   const evaluate = async (value: PermissionValue): Promise<boolean> => {
-    if (typeof value === "string") return currentPermissions.includes(value);
-    if (Array.isArray(value))
-      return (
-        await Promise.all(
-          value.map((p) => hasPermission(p, currentPermissions))
-        )
-      ).some(Boolean);
+    if (typeof value === "string") {
+      // صلاحية واحدة - تحقق إذا موجودة في الصلاحيات
+      return currentPermissions.includes(value);
+    }
+
+    if (Array.isArray(value)) {
+      // مصفوفة صلاحيات - نتحقق إذا تحقق على الأقل واحد منهم
+      const results = await Promise.all(
+        value.map((p) => hasPermission(p, currentPermissions))
+      );
+      return results.some(Boolean);
+    }
+
     if (typeof value === "object" && value.permissions && value.mode) {
+      // تحقق حسب نوع المطابقة (and, or, regex, startWith,...)
       const { permissions, mode } = value;
+
       const checks = {
         and: () => permissions.every((p) => currentPermissions.includes(p)),
         or: () => permissions.some((p) => currentPermissions.includes(p)),
@@ -70,17 +80,20 @@ export const hasPermission = async (
               const r = new RegExp(p);
               return currentPermissions.some((u) => r.test(u));
             } catch (e) {
-              isDevelopmentMode &&
+              if (isDevelopmentMode) {
                 console.warn("[v-permission] Invalid regex:", p, e);
+              }
               return false;
             }
           }),
       };
+
       return checks[mode]?.() ?? false;
     }
 
-    isDevelopmentMode &&
+    if (isDevelopmentMode) {
       console.warn("[v-permission] Invalid permission value:", value);
+    }
     return false;
   };
 
